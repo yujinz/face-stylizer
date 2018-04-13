@@ -48,54 +48,9 @@ def shape_to_np(shape, dtype="int"):
     # return the list of (x, y)-coordinates
     return coords
 
-def get_facial_landmark(rects):
-    for (i, rect) in enumerate(rects):
-        print("Detection {}: Left: {} Top: {} Right: {} Bottom: {}".format(
-            i, rect.left(), rect.top(), rect.right(), rect.bottom()))
-        # determine the facial landmarks for the face region, then
-        # convert the facial landmark (x, y)-coordinates to a NumPy array
-        shape = predictor(img_resized, rect)
-        print("Part 0: {}, Part 1: {} ...".format(shape.part(0),
-                                                  shape.part(1)))
-
-        # Draw the face landmarks on the screen.
-        win.add_overlay(shape)
-        shape = shape_to_np(shape)
-
-        # convert dlib's rectangle to a OpenCV-style bounding box
-        # [i.e., (x, y, w, h)], then draw the face bounding box
-        (x, y, w, h) = rect_to_bb(rect)
-        # cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 2)
-
-        # loop over the (x, y)-coordinates for the facial landmarks
-        # and draw them on the image
-        # for (x, y) in shape:
-        #     cv2.circle(img, (int(x/ratio), int(y/ratio)), 3, (255, 255, 255), -1)
-        #     print(str(int(x/ratio)) + " " + str(int(y/ratio)))        
-
-    return shape
-
-
-if len(sys.argv) != 2:
-    print(
-        "Give the directory containing the facial images.\n"
-        "e.g.:\n"
-        "    ./face_landmark_detection.py ./examples/faces\n")
-    exit()
-
-predictor_path = "shape_predictor_68_face_landmarks.dat"
-# You can download a trained facial shape predictor from:
-# http://dlib.net/files/shape_predictor_68_face_landmarks.dat.bz2
-faces_folder_path = sys.argv[1]
-
-detector = dlib.get_frontal_face_detector()
-predictor = dlib.shape_predictor(predictor_path)
-
-win = dlib.image_window()
-
-for f in glob.glob(os.path.join(faces_folder_path, "*.jpg")):
-    print("Processing file: {}".format(f))
-    img = io.imread(f)
+def draw_and_write_landmark(filename, detector, predictor, win):
+    print("Processing file: {}".format(filename))
+    img = io.imread(filename)
 
     img_grey = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     img_resized = resize(img_grey, width=500)
@@ -108,8 +63,53 @@ for f in glob.glob(os.path.join(faces_folder_path, "*.jpg")):
     # will make everything bigger and allow us to detect more faces.    
     rects = detector(img_resized, 1)
 
-    landmarks = get_facial_landmark(rects)
+    if len(rects) != 1:
+        return
+
+    outfile = open("./output/" + filename.split('/')[-2] + ".txt", "w+")
+    for (i, rect) in enumerate(rects):
+        print("Detection {}: Left: {} Top: {} Right: {} Bottom: {}".format(
+            i, rect.left(), rect.top(), rect.right(), rect.bottom()))
+        # determine the facial landmarks for the face region, then
+        # convert the facial landmark (x, y)-coordinates to a NumPy array
+        shape = predictor(img_resized, rect)
+
+        # Draw the face landmarks on the screen.
+        win.add_overlay(shape)
+        shape = shape_to_np(shape)
+
+        # convert dlib's rectangle to a OpenCV-style bounding box
+        # [i.e., (x, y, w, h)], then draw the face bounding box
+        # (x, y, w, h) = rect_to_bb(rect)
+        # cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 2)
+
+        # loop over the (x, y)-coordinates for the facial landmarks
+        # and draw them on the image
+        for (x, y) in shape:
+            outfile.write("%d %d\r\n" % (int(x/ratio), int(y/ratio)))
+        #     cv2.circle(img, (int(x/ratio), int(y/ratio)), 3, (255, 255, 255), -1)
 
     win.add_overlay(rects)
-
+    outfile.close() 
     dlib.hit_enter_to_continue()
+
+
+if len(sys.argv) != 3:
+    print(
+        "Usage:\n"
+        "    ./facial_landmark_detection.py ./examples/art/01.jpg ./examples/target/01.jpg\n")
+    exit()
+
+predictor_path = "shape_predictor_68_face_landmarks.dat"
+# You can download a trained facial shape predictor from:
+# http://dlib.net/files/shape_predictor_68_face_landmarks.dat.bz2
+art_face_path = sys.argv[1]
+target_face_path = sys.argv[2]
+
+detector = dlib.get_frontal_face_detector()
+predictor = dlib.shape_predictor(predictor_path)
+
+win = dlib.image_window()
+
+draw_and_write_landmark(art_face_path, detector, predictor, win)
+draw_and_write_landmark(target_face_path, detector, predictor, win)
