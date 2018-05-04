@@ -10,19 +10,19 @@ import numpy as np
 
 def resize(img, width=None, height=None, interpolation=cv2.INTER_AREA):
     global ratio
-    w, h = img.shape
+    h, w = img.shape[:2]
 
     if width is None and height is None:
         return img
     elif width is None:
         ratio = height / h
         width = int(w * ratio)
-        resized = cv2.resize(img, (height, width), interpolation)
+        resized = cv2.resize(img, (width, height), interpolation)
         return resized
     else:
         ratio = width / w
         height = int(h * ratio)
-        resized = cv2.resize(img, (height, width), interpolation)
+        resized = cv2.resize(img, (width, height), interpolation)
         return resized
 
 def rect_to_bb(rect):
@@ -48,15 +48,11 @@ def shape_to_np(shape, dtype="int"):
     # return the list of (x, y)-coordinates
     return coords
 
-def draw_and_write_landmark(filename, detector, predictor, win):
-    print("Processing file: {}".format(filename))
-    img = io.imread(filename)
-
-    img_grey = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    img_resized = resize(img_grey, width=500)
-
-    win.clear_overlay()
-    win.set_image(img_resized)
+def draw_and_write_landmark(img_resized, detector, predictor, outfilename, is_disp = False):
+    if is_disp:
+        win = dlib.image_window()
+        win.clear_overlay()
+        win.set_image(img_resized)
 
     # Ask the detector to find the bounding boxes of each face. The 1 in the
     # second argument indicates that we should upsample the image 1 time. This
@@ -66,16 +62,17 @@ def draw_and_write_landmark(filename, detector, predictor, win):
     if len(rects) != 1:
         return
 
-    outfile = open("./output/" + filename.split('/')[-2] + ".txt", "w+")
+    outfile = open("./output/" + outfilename + ".txt", "w+")
     for (i, rect) in enumerate(rects):
-        print("Detection {}: Left: {} Top: {} Right: {} Bottom: {}".format(
-            i, rect.left(), rect.top(), rect.right(), rect.bottom()))
+        print("Left: {} Top: {} Right: {} Bottom: {}".format(
+            rect.left(), rect.top(), rect.right(), rect.bottom()))
         # determine the facial landmarks for the face region, then
         # convert the facial landmark (x, y)-coordinates to a NumPy array
         shape = predictor(img_resized, rect)
 
         # Draw the face landmarks on the screen.
-        win.add_overlay(shape)
+        if is_disp:
+            win.add_overlay(shape)
         shape = shape_to_np(shape)
 
         # convert dlib's rectangle to a OpenCV-style bounding box
@@ -86,30 +83,42 @@ def draw_and_write_landmark(filename, detector, predictor, win):
         # loop over the (x, y)-coordinates for the facial landmarks
         # and draw them on the image
         for (x, y) in shape:
-            outfile.write("%d %d\r\n" % (int(x/ratio), int(y/ratio)))
+            #if i<43 or i>48:
+            outfile.write("%d %d\r\n" % (int(x), int(y)))
         #     cv2.circle(img, (int(x/ratio), int(y/ratio)), 3, (255, 255, 255), -1)
 
-    win.add_overlay(rects)
     outfile.close() 
-    dlib.hit_enter_to_continue()
+    if is_disp:
+        win.add_overlay(rects)
+        dlib.hit_enter_to_continue()
 
 
-if len(sys.argv) != 3:
-    print(
-        "Usage:\n"
-        "    ./facial_landmark_detection.py ./examples/art/01.jpg ./examples/target/01.jpg\n")
-    exit()
+if __name__ == "__main__":
+	if len(sys.argv) != 3:
+	    print(
+	        "Usage:\n"
+	        "    ./facial_landmark_detection.py ./examples/art/01.jpg ./examples/target/01.jpg\n")
+	    exit()
 
-predictor_path = "shape_predictor_68_face_landmarks.dat"
-# You can download a trained facial shape predictor from:
-# http://dlib.net/files/shape_predictor_68_face_landmarks.dat.bz2
-art_face_path = sys.argv[1]
-target_face_path = sys.argv[2]
+	predictor_path = "shape_predictor_68_face_landmarks.dat"
+	# You can download a trained facial shape predictor from:
+	# http://dlib.net/files/shape_predictor_68_face_landmarks.dat.bz2
+	art_face_path = sys.argv[1]
+	target_face_path = sys.argv[2]
 
-detector = dlib.get_frontal_face_detector()
-predictor = dlib.shape_predictor(predictor_path)
+	detector = dlib.get_frontal_face_detector()
+	predictor = dlib.shape_predictor(predictor_path)
 
-win = dlib.image_window()
+	#win = dlib.image_window()
 
-draw_and_write_landmark(art_face_path, detector, predictor, win)
-draw_and_write_landmark(target_face_path, detector, predictor, win)
+	print("Processing file: {}".format(art_face_path))
+	img = io.imread(art_face_path)
+	h, w, c = img.shape
+	img_grey = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+	draw_and_write_landmark(img_grey, detector, predictor, "art")
+
+	print("Processing file: {}".format(target_face_path))
+	img = io.imread(target_face_path)
+	img_grey = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+	img_resized = resize(img_grey, width=w)
+	draw_and_write_landmark(img_resized, detector, predictor, "target")
