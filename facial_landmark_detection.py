@@ -98,10 +98,10 @@ def draw_and_write_landmark(img_resized, detector, predictor, outfilename, is_di
     return shape
 
 
-def set_mask_area(mask, coords, val):
+def set_mask_area(mask, coords, val, blur_size):
     cv2.fillConvexPoly(mask, coords, val)
     gauss_mask = mask.astype(np.float)
-    gauss_mask = cv2.GaussianBlur(gauss_mask, (5, 5), 0)
+    gauss_mask = cv2.GaussianBlur(gauss_mask, (blur_size, blur_size), 0)
     # temp = []
     # for i in range(im.shape[0]):
     #     for j in range(im.shape[1]):

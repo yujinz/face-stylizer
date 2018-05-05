@@ -61,16 +61,23 @@ else:
 #plt.show()
 
 im1 = art_transformed
+tar_resized = cv2.stylization(tar_resized, sigma_s=30, sigma_r=0.2)
+plt.imshow(tar_resized)
+plt.show()
 im2 = cv2.normalize(tar_resized, None, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
-art_mask = np.full((im2.shape[0], im2.shape[1]), 0.7)
+
+
+art_mask = np.full((im2.shape[0], im2.shape[1]), 0.0)
+face = np.concatenate((q[0:17], q[17:27][::-1]), axis=0)
+art_mask = set_mask_area(art_mask, face, 0.4, 15)
 left_eye = q[36:42]
-art_mask = set_mask_area(art_mask, left_eye, 1.0)
+art_mask = set_mask_area(art_mask, left_eye, 0.95, 5)
 right_eye = q[42:48]
-art_mask = set_mask_area(art_mask, right_eye, 1.0)
+art_mask = set_mask_area(art_mask, right_eye, 0.95, 5)
 teeth = q[60:68]
-art_mask = set_mask_area(art_mask, teeth, 0)
-# plt.imshow(art_mask)
-# plt.show()
+art_mask = set_mask_area(art_mask, teeth, 0.1, 5)
+plt.imshow(art_mask)
+plt.show()
 
 height1, width1 = im1.shape[:2]
 height2, width2 = im2.shape[:2]
