@@ -98,29 +98,22 @@ def draw_and_write_landmark(img_resized, detector, predictor, outfilename, is_di
     return shape
 
 
-def find_area(im, coords):
-    mask = np.zeros((im.shape[0], im.shape[1]))
-
-    cv2.fillConvexPoly(mask, coords, 1)
-    mask = mask.astype(np.bool)
-    out = np.zeros_like(im)
-    out[mask] = im[mask]
-
+def set_mask_area(mask, coords, val):
+    cv2.fillConvexPoly(mask, coords, val)
     gauss_mask = mask.astype(np.float)
     gauss_mask = cv2.GaussianBlur(gauss_mask, (5, 5), 0)
-    temp = []
-    for i in range(im.shape[0]):
-        for j in range(im.shape[1]):
-            if mask[i][j]:
-                temp.append([i, j])
-    all_coords = np.array(temp)
+    # temp = []
+    # for i in range(im.shape[0]):
+    #     for j in range(im.shape[1]):
+    #         if mask[i][j]:
+    #             temp.append([i, j])
+    # all_coords = np.array(temp)
     # print(all_coords)
-
     #cv2.imshow("crop", out)
     #cv2.waitKey(0)
     #cv2.destroyAllWindows()
 
-    return gauss_mask, all_coords
+    return gauss_mask#, all_coords
 
 
 if __name__ == "__main__":
