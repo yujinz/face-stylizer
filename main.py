@@ -5,9 +5,9 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 from facial_landmark_detection import (resize, draw_and_write_landmark, set_mask_area)
-from moving_least_squares import (mls_affine_deformation, mls_affine_deformation_inv,
-                                  mls_similarity_deformation, mls_similarity_deformation_inv,
-                                  mls_rigid_deformation, mls_rigid_deformation_inv)
+from moving_least_squares import (mls_affine_deformation_inv,
+                                  mls_similarity_deformation_inv,
+                                  mls_rigid_deformation_inv)
 
 if len(sys.argv) != 3:
     print(
