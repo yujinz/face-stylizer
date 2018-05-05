@@ -38,20 +38,24 @@ else:
     tar_resized = resize(tar_img, width=300)
 art_grey = cv2.cvtColor(art_resized, cv2.COLOR_BGR2GRAY)
 tar_grey = cv2.cvtColor(tar_resized, cv2.COLOR_BGR2GRAY)
-draw_and_write_landmark(art_grey, detector, predictor, "art", True)  # , True
+draw_and_write_landmark(art_grey, detector, predictor, "art")  # , True
 draw_and_write_landmark(tar_grey, detector, predictor, "target")
 
 p = np.loadtxt('output/art.txt')
 q = np.loadtxt('output/target.txt')
+p_resized = p // 2
+q_resized = q // 2
 if is_height_resize:
-    p = p / 2
-    q = q / 2
-    art_resized = resize(art_img, height=250)
+	art_resized = resize(art_img, height=250)
+else:
+	art_resized = resize(art_img, width=150)
 
 art_transformed = mls_rigid_deformation_inv(art_resized, p, q, alpha=1, density=1)
 scipy.misc.imsave('output/temp.jpg', art_transformed)
 if is_height_resize:
-    art_transformed = resize(art_transformed, height=500)
+	art_transformed = resize(art_transformed, height=500)
+else:
+	art_transformed = resize(art_transformed, width=300)
 # plt.imshow(art_transformed)
 # plt.show()
 
