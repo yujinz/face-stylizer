@@ -64,7 +64,8 @@ def draw_and_write_landmark(img_resized, detector, predictor, outfilename, is_di
     rects = detector(img_resized, 1)
 
     if len(rects) != 1:
-        return
+    	print("error detecting face")
+        exit()
 
     outfile = open("./output/" + outfilename + ".txt", "w+")
     for (i, rect) in enumerate(rects):
@@ -87,8 +88,8 @@ def draw_and_write_landmark(img_resized, detector, predictor, outfilename, is_di
         # loop over the (x, y)-coordinates for the facial landmarks
         # and draw them on the image
         for (x, y) in shape:
-            # if i<43 or i>48:
-            outfile.write("%d %d\r\n" % (int(x), int(y)))
+            if is_disp:
+                outfile.write("%d %d\r\n" % (int(x), int(y)))
         #     cv2.circle(img, (int(x/ratio), int(y/ratio)), 3, (255, 255, 255), -1)
 
     outfile.close()
