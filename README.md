@@ -2,7 +2,7 @@
 Sample output: see [this report](https://github.com/yujinz/art-face/blob/master/documents/CS543%20Project%20Final%20Report.pdf)
 
 ### Usage:
-python ./facial_landmark_detection.py ./examples/art/01.jpg ./examples/target/01.jpg
+python main.py ./examples/art/01.jpg ./examples/target/01.jpg
 
 ### Dependencies:
 cv2, dlib (use https://pypi.python.org/simple/dlib/ to install on Windows), skimage, numpy, matplotlib
