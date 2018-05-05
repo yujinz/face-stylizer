@@ -12,7 +12,7 @@ from moving_least_squares import (mls_affine_deformation_inv,
 if len(sys.argv) != 3:
     print(
         "Usage:\n"
-        "    python ./facial_landmark_detection.py ./examples/art/01.jpg ./examples/target/01.jpg\n")
+        "    python ./main.py ./examples/art/01.jpg ./examples/target/01.jpg\n")
     exit()
 
 predictor_path = "shape_predictor_68_face_landmarks.dat"
