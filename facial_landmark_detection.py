@@ -151,7 +151,7 @@ if __name__ == "__main__":
 
     img = io.imread(art_face_path)
     cv2.imshow("test", img)
-    mask, left_eye_all = find_area(img, left_eye)
+    mask, left_eye_all = set_mask_area(img, left_eye)
 
     # print(len(left_eye_all))
     for i in range(len(left_eye_all)):
